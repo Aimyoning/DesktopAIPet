@@ -5,7 +5,7 @@
 #include <QFile>            // ← 新增：检测文件是否存在
 
 namespace {
-// GIF 资源路径（放在项目目录 assets/ 下）
+// GIF 资源路径
 const QString kIdlePath = QStringLiteral("assets/idle.gif");
 const QString kTalkPath = QStringLiteral("assets/talk.gif");
 }
@@ -28,7 +28,7 @@ PetWidget::PetWidget(QWidget* parent) : QWidget(parent)
     m_idleMovie = new QMovie(this);
     m_talkMovie = new QMovie(this);
 
-    // ---- 加载 GIF（存在则用 GIF，不存在用 emoji 占位） ----
+    // ---- 加载 GIF ----
     if (QFile::exists(kIdlePath)) {
         m_idleMovie->setFileName(kIdlePath);
     } else {

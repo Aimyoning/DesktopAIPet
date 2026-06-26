@@ -7,7 +7,7 @@ DeviceCard::DeviceCard(const QString& name, const QString& value,
                        QWidget* parent)
     : QWidget(parent), m_name(name)
 {
-    // 创建标签，显示设备信息（三行）
+    // 创建标签，显示设备信息
     m_label = new QLabel(QString("%1\n%2\n%3").arg(name, value, status), this);
     m_label->setAlignment(Qt::AlignCenter);
 

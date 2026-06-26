@@ -2,7 +2,7 @@
 #define AICLIENT_H
 
 #include <QObject>
-#include <QSqlDatabase>  // SQLite 数据库连接
+#include <QSqlDatabase>
 #include <QList>
 #include <QPair>
 
@@ -38,8 +38,10 @@ public:
      * @param apiKey 你的 DeepSeek API Key
      */
     void setApiKey(const QString& apiKey);
+
     /// 获取已加载的聊天历史（供 DesktopAIPet 回放到界面）
     const QList<QPair<QString, QString>>& chatHistory() const { return m_chatHistory; }
+
 signals:
     /// AI 回复已接收（完整文本）
     void replyReceived(const QString& fullReply);

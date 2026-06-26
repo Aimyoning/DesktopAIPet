@@ -6,7 +6,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    // 设置应用图标（任务栏 + 标题栏 + 快捷方式）
+    // 设置应用图标
     app.setWindowIcon(QIcon("assets/robot.ico"));
     DesktopAIPet window;
     // ── 从环境变量读取 API Key ──
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
             "  border-radius:4px; padding:6px 20px; }");
         msgBox.exec();
     }
-    window.setApiKey(apiKey);             // ← 通过公开方法设置，不再硬编码
+    window.setApiKey(apiKey);
     window.show();
     return app.exec();
 }

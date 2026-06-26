@@ -29,7 +29,7 @@ AiClient::AiClient(QObject* parent)
     : QObject(parent)
     , m_networkManager(new QNetworkAccessManager(this))
 {
-    // 初始化 SQLite（数据库文件存在程序目录下）
+    // 初始化 SQLite
     QString dbPath = QCoreApplication::applicationDirPath() + "/chat_history.db";
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(dbPath);
@@ -54,19 +54,18 @@ AiClient::AiClient(QObject* parent)
 }
 
 
-// ============================================================
+
 // 设置 API Key
-// ============================================================
 void AiClient::setApiKey(const QString& apiKey)
 {
     m_apiKey = apiKey;
 }
 
-// ============================================================
+
 // 构建请求体 JSON
 // OpenAI 兼容格式：
 // {
-//   "model": "deepseek-chat",
+//   "model": "deepseek-v4 flash",
 //   "messages": [
 //     {"role": "system", "content": "..."},
 //     {"role": "user",   "content": "..."}
@@ -78,7 +77,7 @@ QString AiClient::buildRequestBody(const QString& userMessage) const
 {
     QJsonArray messages;
 
-    // 第 1 条：System Prompt（角色设定）
+
     QJsonObject sysMsg;
     sysMsg["role"]    = "system";
     sysMsg["content"] = kSystemPrompt;

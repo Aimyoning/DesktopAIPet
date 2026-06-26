@@ -48,7 +48,7 @@ DesktopAIPet::~DesktopAIPet()
     }
 }
 
-// ---- 组装 UI（不变） ----
+// ---- 组装 UI----
 void DesktopAIPet::setupUI()
 {
     QHBoxLayout* mainRow = new QHBoxLayout;
@@ -91,7 +91,7 @@ void DesktopAIPet::setupAgents()
     m_motorA  = new MotorAgent("电机A");      // 默认 1.5 秒采集
     m_motorB  = new MotorAgent("电机B");
 
-    // ── ② 创建 4 个线程（parent 设 this，窗口关闭时自动回收） ──
+    // ── ② 创建 4 个线程 ──
     m_thread1 = new QThread(this);
     m_thread2 = new QThread(this);
     m_thread3 = new QThread(this);
@@ -211,7 +211,7 @@ void DesktopAIPet::onAgentData(const QString& name, const QString& value,
 
 
 // ============================================================
-// 向 AI 发送诊断请求（带 5 秒冷却，防止刷屏）
+// 向 AI 发送诊断请求
 // ============================================================
 void DesktopAIPet::triggerDiagnosis(const QString& name, const QString& value,
                                     const QString& status)

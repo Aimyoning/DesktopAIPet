@@ -26,7 +26,7 @@ void ChatPanel::setupUI()
     QLabel* title = new QLabel("🤖 Robot", this);
     title->setStyleSheet("font-size:16px; font-weight:bold; color:#00d4ff; padding:4px;");
 
-    // 聊天记录（只读）
+    // 聊天记录
     m_history = new QTextEdit(this);
     m_history->setReadOnly(true);
     m_history->setPlaceholderText("我正在等待你的消息...");
@@ -93,7 +93,7 @@ void ChatPanel::setupConnections()
     });
 }
 
-// ---- 显示用户消息（绿色） ----
+// ---- 显示用户消息 ----
 void ChatPanel::appendUserMessage(const QString& text)
 {
     m_history->append(
@@ -105,7 +105,7 @@ void ChatPanel::appendUserMessage(const QString& text)
     sb->setValue(sb->maximum());
 }
 
-// ---- 显示 AI 回复（浅蓝色） ----
+// ---- 显示 AI 回复 ----
 void ChatPanel::appendAIReply(const QString& text)
 {
     m_history->append(
