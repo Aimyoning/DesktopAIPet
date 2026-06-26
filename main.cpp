@@ -1,4 +1,4 @@
-﻿#include "DesktopAIPet.h"
+﻿#include "ui/DesktopAIPet.h"
 #include <QApplication>
 #include <QIcon>
 #include <QProcessEnvironment>
