@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+﻿cmake_minimum_required(VERSION 3.19)
 project(DesktopAIPet LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -16,9 +16,17 @@ qt_add_executable(DesktopAIPet
     src/ui/ChatPanel.h         src/ui/ChatPanel.cpp
     src/ui/DeviceCard.h        src/ui/DeviceCard.cpp
     src/business/AiClient.h    src/business/AiClient.cpp
-    src/business/DeviceAgent.h src/business/DeviceAgent.cpp
-    src/business/SensorAgent.h src/business/SensorAgent.cpp
-    src/business/MotorAgent.h  src/business/MotorAgent.cpp
+    src/business/TcpAgent.h
+    src/business/TcpAgent.cpp
+    src/business/TcpServer.h
+    src/business/TcpServer.cpp
+    src/business/TcpSensorAgent.h
+    src/business/TcpSensorAgent.cpp
+    src/business/TcpMotorAgent.h
+    src/business/TcpMotorAgent.cpp
+
+
+
 )
 
 target_include_directories(DesktopAIPet PRIVATE ${CMAKE_SOURCE_DIR}/src)

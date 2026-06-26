@@ -3,12 +3,16 @@
 #include "ui/ChatPanel.h"
 #include "ui/DeviceCard.h"
 #include "business/AiClient.h"
-#include "business/SensorAgent.h"
-#include "business/MotorAgent.h"
+#include "business/TcpAgent.h"
+#include "business/TcpServer.h"
+#include "business/TcpSensorAgent.h"
+#include "business/TcpMotorAgent.h"
 #include <QThread>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QTimer>
+#include <QMessageBox>
+#include <QCloseEvent>
 
 // ============================================================
 // 构造函数
@@ -80,69 +84,60 @@ void DesktopAIPet::setupUI()
     root->addLayout(bottomRow);
 }
 
-// ============================================================
-// 创建 Agent + 线程 + 移动 + 启动
-// ============================================================
 void DesktopAIPet::setupAgents()
 {
-    // ── ① 创建 4 个 Agent 对象（无 parent，因为要 moveToThread） ──
-    m_sensor1 = new SensorAgent("CPU使用率", DataSource::Cpu);
-    m_sensor2 = new SensorAgent("内存使用率", DataSource::Memory);
-    m_motorA  = new MotorAgent("电机A");      // 默认 1.5 秒采集
-    m_motorB  = new MotorAgent("电机B");
+    // ── ① 启动 TCP 服务器（监听 12345 端口） ──
+    m_tcpServer = new TcpServer(12345, this);
+    m_tcpServer->start();
 
-    // ── ② 创建 4 个线程 ──
-    m_thread1 = new QThread(this);
-    m_thread2 = new QThread(this);
-    m_thread3 = new QThread(this);
-    m_thread4 = new QThread(this);
-
-    // ── ③ Agent 移动到各自线程 ──
-    m_sensor1->moveToThread(m_thread1);
-    m_sensor2->moveToThread(m_thread2);
-    m_motorA ->moveToThread(m_thread3);
-    m_motorB ->moveToThread(m_thread4);
-
-    // ── ④ 线程启动 → 自动调用 Agent::start() 开始采集 ──
-    connect(m_thread1, &QThread::started, m_sensor1, &SensorAgent::start);
-    connect(m_thread2, &QThread::started, m_sensor2, &SensorAgent::start);
-    connect(m_thread3, &QThread::started, m_motorA,  &MotorAgent::start);
-    connect(m_thread4, &QThread::started, m_motorB,  &MotorAgent::start);
-
-    // ── ⑤ Agent 数据 → 更新对应 DeviceCard ──
-    // 注意：dataReported 在子线程发射，UI 更新必须在主线程
-    //       Qt 的 AutoConnection 会自动识别跨线程，以 QueuedConnection 处理
-    connect(m_sensor1, &SensorAgent::dataReported, this,
-            [this](const QString& /*name*/, const QString& value,
+    // ── ② 数据路由：服务器收到 JSON → 更新对应 DeviceCard ──
+    connect(m_tcpServer, &TcpServer::agentDataReceived, this,
+            [this](const QString& name, const QString& value,
                    const QString& status, const QString& color) {
-                m_device1->updateData(value, status, color);
-        onAgentData("CPU使用率", value, status);
-            });
-    connect(m_sensor2, &SensorAgent::dataReported, this,
-            [this](const QString& /*name*/, const QString& value,
-                   const QString& status, const QString& color) {
-                m_device2->updateData(value, status, color);
-        onAgentData("内存使用率", value, status);
-            });
-    connect(m_motorA, &MotorAgent::dataReported, this,
-            [this](const QString& /*name*/, const QString& value,
-                   const QString& status, const QString& color) {
-                m_device3->updateData(value, status, color);
-        onAgentData("电机A", value, status);
-            });
-    connect(m_motorB, &MotorAgent::dataReported, this,
-            [this](const QString& /*name*/, const QString& value,
-                   const QString& status, const QString& color) {
-                m_device4->updateData(value, status, color);
-        onAgentData("电击B", value, status);
+                if      (name == "CPU使用率")  m_device1->updateData(value, status, color);
+                else if (name == "内存使用率") m_device2->updateData(value, status, color);
+                else if (name == "电机A")      m_device3->updateData(value, status, color);
+                else if (name == "电机B")      m_device4->updateData(value, status, color);
+                onAgentData(name, value, status);
             });
 
-    // ── ⑥ 启动全部线程 ──
+    // ── ③ Agent 连接/断线状态 → 终端打印（调试用） ──
+    connect(m_tcpServer, &TcpServer::serverStatus,
+            this, [](const QString& msg) { qDebug() << msg; });
+
+    // ── ④ 创建 4 个 Agent，各自连接服务器 ──
+    auto* cpu    = new TcpSensorAgent("CPU使用率",  DataSource::Cpu);
+    auto* mem    = new TcpSensorAgent("内存使用率", DataSource::Memory);
+    auto* motorA = new TcpMotorAgent("电机A");
+    auto* motorB = new TcpMotorAgent("电机B");
+
+    // ── ⑤ Agent 移到各自线程 ──
+    m_thread1 = new QThread(this); cpu->moveToThread(m_thread1);
+    m_thread2 = new QThread(this); mem->moveToThread(m_thread2);
+    m_thread3 = new QThread(this); motorA->moveToThread(m_thread3);
+    m_thread4 = new QThread(this); motorB->moveToThread(m_thread4);
+
+    connect(m_thread1, &QThread::started, cpu,    &TcpAgent::start);
+    connect(m_thread2, &QThread::started, mem,    &TcpAgent::start);
+    connect(m_thread3, &QThread::started, motorA, &TcpAgent::start);
+    connect(m_thread4, &QThread::started, motorB, &TcpAgent::start);
+
+    // 线程退出时自动释放 Agent 对象
+    connect(m_thread1, &QThread::finished, cpu,    &QObject::deleteLater);
+    connect(m_thread2, &QThread::finished, mem,    &QObject::deleteLater);
+    connect(m_thread3, &QThread::finished, motorA, &QObject::deleteLater);
+    connect(m_thread4, &QThread::finished, motorB, &QObject::deleteLater);
+
     m_thread1->start();
     m_thread2->start();
     m_thread3->start();
     m_thread4->start();
+    // connectToServer 移到 TcpAgent::start() 内部执行
+
 }
+
+
+
 
 // ---- 信号槽连接（不变） ----
 void DesktopAIPet::setupConnections()

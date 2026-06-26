@@ -7,13 +7,7 @@ class ChatPanel;
 class DeviceCard;
 class AiClient;
 class QThread;
-class SensorAgent;
-class MotorAgent;
-#include <QWidget>
-#include <QCloseEvent>
-#include <QMessageBox>
-#include <QCloseEvent>
-#include <QMessageBox>
+class TcpServer;
 class DesktopAIPet : public QWidget
 {
     Q_OBJECT
@@ -43,19 +37,14 @@ private:
     AiClient*    m_aiClient   = nullptr;
 
     // ======== Agent + 线程 ========
-    SensorAgent* m_sensor1    = nullptr;
-    SensorAgent* m_sensor2    = nullptr;
-    MotorAgent*  m_motorA     = nullptr;
-    MotorAgent*  m_motorB     = nullptr;
-
-    QThread*     m_thread1    = nullptr;  // 传感器1 线程
-    QThread*     m_thread2    = nullptr;  // 传感器2 线程
-    QThread*     m_thread3    = nullptr;  // 电机A 线程
-    QThread*     m_thread4    = nullptr;  // 电机B 线程
+    QThread*     m_thread1    = nullptr;  // 线程1
+    QThread*     m_thread2    = nullptr;  // 线程2
+    QThread*     m_thread3    = nullptr;  // 线程3
+    QThread*     m_thread4    = nullptr;  // 线程4
+    TcpServer*   m_tcpServer  = nullptr;  // TCP 服务器
     // ======== 异常诊断 ========
     QTimer* m_cooldown1 = nullptr;  // 传感器1 冷却
     QTimer* m_cooldown2 = nullptr;  // 传感器2 冷却
     QTimer* m_cooldown3 = nullptr;  // 电机A 冷却
     QTimer* m_cooldown4 = nullptr;  // 电机B 冷却
-
 };
